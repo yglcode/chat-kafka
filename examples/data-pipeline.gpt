@@ -29,7 +29,6 @@ mkdir $OUTDIR
 # run benthos processor
 docker run --rm --network host -v $(pwd)/config_transform.yaml:/benthos.yaml jeffail/benthos > $OUTTEXT 2> $ERRTEXT
 
-cat $OUTTEXT
 
 ---
 name: data-aggregate
