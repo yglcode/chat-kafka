@@ -7,3 +7,5 @@ chat-kafka a thin wrapper over kaf(https://github.com/birdayz/kaf), provides a s
 To run the example, you need:
 1. install gptscript and set up OpenAI token as instructed in gptscript project.
 2. have docker installed.
+3. clone this repo
+4. cd examples; gptscript data-pipeline.gpt
