@@ -1,0 +1,72 @@
+export: connect-broker, create-topic, list-topics, send-data-topic, send-file-topic
+description: A toolset for talking to kafka broker cluster.
+
+---
+name: create-topic
+description: create a kafka topic
+args: name: topic name
+args: partitions: (optional) number of partitions
+args: replicas: (optional) number of replicas
+
+#!/usr/bin/env bash
+
+parts=1
+if [[ -n ${partitions} ]]; then
+  parts=${partitions}
+fi
+
+repls=1
+if [[ -n ${replicas} ]]; then
+  repls=${replicas}
+fi
+
+${GPTSCRIPT_TOOL_DIR}/bin/kaf topic create ${name} --partitions ${parts} --replicas ${repls} || true
+
+---
+name: send-data-topic
+description: send or produce input data to a topic
+args: name: topic name
+args: input: data to send
+
+#!/usr/bin/env bash
+
+echo ${input} | ${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${name}
+
+---
+name: send-file-topic
+description: send or produce file content to a topic
+args: name: topic name
+args: file: name of file to send
+
+#!/usr/bin/env bash
+
+${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${name} < ${file}
+
+---
+name: list-topics
+description: list all topics in broker cluster
+
+#!/usr/bin/env bash
+
+${GPTSCRIPT_TOOL_DIR}/bin/kaf topics
+
+---
+name: connect-broker
+description: connect to kafka brokers. Install kaf first
+args: cluster: kafka cluster name
+args: brokers: comma separated list of brokers ip:port
+tools: sys.exec, sys.http.get, sys.write
+
+#!/usr/bin/env bash
+
+if [[ ! -d ${GPTSCRIPT_TOOL_DIR}/bin ]]; then
+   mkdir ${GPTSCRIPT_TOOL_DIR}/bin
+fi
+if [[ ! -f ${GPTSCRIPT_TOOL_DIR}/bin/kaf ]]; then
+   echo "install kafka client kaf"
+   curl https://raw.githubusercontent.com/birdayz/kaf/master/godownloader.sh | BINDIR=${GPTSCRIPT_TOOL_DIR}/bin bash
+   export PATH=$PATH:${GPTSCRIPT_TOOL_DIR}/bin
+fi
+if ${GPTSCRIPT_TOOL_DIR}/bin/kaf config add-cluster ${cluster} --brokers ${brokers}; then
+  ${GPTSCRIPT_TOOL_DIR}/bin/kaf config use-cluster ${cluster}
+fi

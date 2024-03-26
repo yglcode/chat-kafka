@@ -1,0 +1,30 @@
+input:
+  read_until:
+    input:
+      kafka:
+        addresses: ["localhost:9092"]
+        topics: ["<intopic>"]
+        start_from_oldest: true
+        consumer_group: "IngestGroup<groupid>"
+    idle_timeout: 5s
+    
+pipeline:
+  processors:
+    - bloblang: |
+        let data = content().string()
+        root = if $data.re_match("^\\[.+?\\] .+? ") {
+          {
+            "event_time": $data.re_find_object("^\\[(?P<event_time>.*?)\\]").get("event_time"),
+            "ingest_time": now(),
+            "priority": $data.re_find_object("\\] (?P<priority>.+?) ").get("priority"),
+            "message": $data.re_find_object("\\] (?P<msg>.*)\\(").get("msg"),
+            "source": $data.re_find_object("\\((?P<source>.*)\\)").get("source")
+          }
+        } else {
+          deleted()
+        }
+        
+output:
+  kafka:
+    addresses: ["localhost:9092"]
+    topic: "<outtopic>"

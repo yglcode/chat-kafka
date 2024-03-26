@@ -1,0 +1,87 @@
+tools: data-transform, data-aggregate, start-kafka-broker, stop-kafka-broker, sys.exec, ../tool.gpt
+
+Do the following step by step, don't move on to the next step until current step is done.
+1. start a local kafka broker with name "broker".
+2. connect to this local broker and list topics.
+3. create a "data-raw" topic, and a "data-json" topic with 3 partitions.
+4. save container broker's logs to a local file and send the file content to "data-raw".
+5. transform data from "data-raw" into json object, and send it to "data-json".
+6. aggregate data from "data-json" and show the json result in pretty format.
+7. stop and remove broker.
+
+---
+name: data-transform
+description: receive data from input topic, transform it into json object, and send it to output topic.
+args: intopic: kafka topic to receive data from
+args: outtopic: kafka topic to send data to
+tools: sys.write, sys.read
+
+#!/usr/bin/env bash
+
+# update benthos config file for input/output topics
+sed "s/<intopic>/${intopic}/;s/<outtopic>/${outtopic}/;s/<groupid>/$RANDOM/" config_transform.tmpl > config_transform.yaml
+
+OUTDIR="/tmp/pl_xform$(date +"%d%h%m%S")"
+OUTTEXT="$OUTDIR/out.txt"
+ERRTEXT="$OUTDIR/err.txt"
+mkdir $OUTDIR
+
+# run benthos processor
+docker run --rm --network host -v $(pwd)/config_transform.yaml:/benthos.yaml jeffail/benthos > $OUTTEXT 2> $ERRTEXT
+
+cat $OUTTEXT
+
+---
+name: data-aggregate
+description: aggregate data from input topic and produce final result.
+args: intopic: kafka topic to receive data from
+tools: sys.write, sys.read
+
+#!/usr/bin/env bash
+
+# update benthos config file for input topic
+sed "s/<intopic>/${intopic}/;s/<groupid>/$RANDOM/" config_aggregate.tmpl > config_aggregate.yaml
+
+OUTDIR="/tmp/pl_agg$(date +"%d%h%m%S")"
+OUTTEXT="$OUTDIR/out.txt"
+ERRTEXT="$OUTDIR/err.txt"
+mkdir $OUTDIR
+
+# run benthos processor
+docker run --rm --network host -v $(pwd)/config_aggregate.yaml:/benthos.yaml jeffail/benthos > $OUTTEXT 2> $ERRTEXT
+
+cat $OUTTEXT
+
+---
+name: start-kafka-broker
+description: start a local kafka broker
+args: broker: name of broker
+tools: sys.exec
+
+#!/usr/bin/env bash
+
+if docker ps -a --filter name=${broker} --format {{.Names}} | grep -Eq "^${broker}\$"; then
+    if docker ps --filter name=${broker} --format {{.Names}} | grep -Eq "^${broker}\$"; then
+        echo "Local kafka broker is running"
+    else
+        docker start ${broker}
+        echo "Restart local kafka broker"
+    fi
+else
+    docker run -d --name ${broker} --network host apache/kafka
+    echo "Start local kafka broker"
+fi
+
+---
+name: stop-kafka-broker
+description: clean up, stop and remove local kafka broker
+args: broker: name of broker
+tools: sys.exec
+
+#!/usr/bin/env bash
+
+if docker ps -a --filter name=${broker} --format {{.Names}} | grep -Eq  "^${broker}\$"; then
+    docker stop ${broker}
+    docker rm ${broker}
+    echo "Stop and remove local kafka broker"
+fi

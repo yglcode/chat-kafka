@@ -1,0 +1,29 @@
+input:
+  read_until:
+    input:
+      kafka:
+        addresses: ["localhost:9092"]
+        topics: ["<intopic>"]
+        start_from_oldest: true
+        consumer_group: "AggregateGroup<groupid>"
+    idle_timeout: 5s    
+
+buffer:
+  system_window:
+    #timestamp_mapping: root = this.timestamp
+    size: 5s
+    
+pipeline:
+  processors:
+    - group_by_value:
+        value: '${! json("priority") }'
+    - mapping: |
+        root = if batch_index() == 0 {
+          {
+            "priority": this.priority,
+            "total": json("ingest_time").from_all().unique().length()
+          }
+        } else { deleted() }
+
+output:
+  stdout: {}
