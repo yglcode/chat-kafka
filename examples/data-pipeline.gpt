@@ -6,8 +6,8 @@ Do the following step by step, don't move on to the next step until current step
 3. create a "data-json" topic, and a "data-raw" topic with 3 partitions.
 4. save container broker's logs to a local file and send the file content to "data-raw".
 5. transform data from "data-raw" into json object, and send it to "data-json".
-6. aggregate data from "data-json" and print the result in pretty json format.
-7. stop and remove broker.
+6. aggregate data from "data-json".
+7. in the summary, do not print step by step actions, only print the aggregation result in pretty json format, and stop and remove broker.
 
 ---
 name: data-transform
