@@ -1,4 +1,4 @@
-export: connect-broker, create-topic, list-topics, send-data-topic, send-file-topic
+export: connect-broker, create-topic, delete-topic, list-topics, send-data-topic, send-file-topic, recv-topic-data, recv-topic-file
 description: A toolset for talking to kafka broker cluster.
 
 ---
@@ -22,6 +22,23 @@ fi
 
 ${GPTSCRIPT_TOOL_DIR}/bin/kaf topic create ${name} --partitions ${parts} --replicas ${repls} || true
 
+
+---
+name: delete-topic
+description: delete a kafka topic
+args: name: topic name
+
+#!/usr/bin/env bash
+${GPTSCRIPT_TOOL_DIR}/bin/kaf topic delete ${name} || true
+
+---
+name: list-topics
+description: list all topics in broker cluster
+
+#!/usr/bin/env bash
+
+${GPTSCRIPT_TOOL_DIR}/bin/kaf topics
+
 ---
 name: send-data-topic
 description: send or produce input data to a topic
@@ -30,7 +47,7 @@ args: input: data to send
 
 #!/usr/bin/env bash
 
-echo ${input} | ${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${name}
+echo ${input} | ${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${name} > /tmp/send_dump1 2> /tmp/send_dump2
 
 ---
 name: send-file-topic
@@ -40,15 +57,57 @@ args: file: name of file to send
 
 #!/usr/bin/env bash
 
-${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${name} < ${file}
+${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${name} < ${file} > /tmp/send_dump1 2> /tmp/send_dump2
 
 ---
-name: list-topics
-description: list all topics in broker cluster
+name: recv-topic-data
+description: receive or consume data from a topic
+args: name: topic name
+args: offset: offset to start consuming, oldest, newest, or int
+args: tail: last n message to consume per partition
+args: output: output format, default, raw, or json
 
 #!/usr/bin/env bash
 
-${GPTSCRIPT_TOOL_DIR}/bin/kaf topics
+output=raw
+if [[ -n ${output} ]]; then
+  output=${output}
+fi
+if [[ -n ${tail} ]]; then
+  ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${name} --output ${output} -n ${tail}
+else
+  start=oldest
+  if [[ -n ${offset} ]]; then
+    start=${offset}
+  fi
+  ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${name} --output ${output} --offset ${start}
+fi
+
+
+---
+name: recv-topic-file
+description: receive or consume data from a topic into a file
+args: name: topic name
+args: file: name of file to put data in
+args: offset: offset to start consuming, oldest, newest, or int
+args: tail: last n message to consume per partition
+args: output: output format, default, raw, or json
+
+#!/usr/bin/env bash
+
+output=raw
+if [[ -n ${output} ]]; then
+  output=${output}
+fi
+if [[ -n ${tail} ]]; then
+  ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${name} --output ${output} -n ${tail} > ${file}
+else
+  start=oldest
+  if [[ -n ${offset} ]]; then
+    start=${offset}
+  fi
+  ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${name} --output ${output} --offset ${start} > ${file}
+fi
 
 ---
 name: connect-broker
