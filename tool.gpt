@@ -10,17 +10,7 @@ args: replicas: (optional) number of replicas
 
 #!/usr/bin/env bash
 
-parts=1
-if [[ -n ${partitions} ]]; then
-  parts=${partitions}
-fi
-
-repls=1
-if [[ -n ${replicas} ]]; then
-  repls=${replicas}
-fi
-
-${GPTSCRIPT_TOOL_DIR}/bin/kaf topic create ${name} --partitions ${parts} --replicas ${repls} || true
+${GPTSCRIPT_TOOL_DIR}/bin/kaf topic create ${name} --partitions ${partitions:-1} --replicas ${replicas:-1} || true
 
 
 ---
@@ -69,18 +59,12 @@ args: output: output format, default, raw, or json
 
 #!/usr/bin/env bash
 
-output=raw
-if [[ -n ${output} ]]; then
-  output=${output}
-fi
+output=${output:-raw}
 if [[ -n ${tail} ]]; then
   ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${name} --output ${output} -n ${tail}
 else
-  start=oldest
-  if [[ -n ${offset} ]]; then
-    start=${offset}
-  fi
-  ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${name} --output ${output} --offset ${start}
+  offset=${offset:-oldest}
+  ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${name} --output ${output} --offset ${offset}
 fi
 
 
@@ -95,18 +79,12 @@ args: output: output format, default, raw, or json
 
 #!/usr/bin/env bash
 
-output=raw
-if [[ -n ${output} ]]; then
-  output=${output}
-fi
+output=${output:-raw}
 if [[ -n ${tail} ]]; then
   ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${name} --output ${output} -n ${tail} > ${file}
 else
-  start=oldest
-  if [[ -n ${offset} ]]; then
-    start=${offset}
-  fi
-  ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${name} --output ${output} --offset ${start} > ${file}
+  offset=${offset:-oldest}
+  ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${name} --output ${output} --offset ${offset} > ${file}
 fi
 
 ---
