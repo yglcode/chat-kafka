@@ -129,7 +129,7 @@ tools: sys.exec
 
 #!/usr/bin/env bash
 
-sleep 5 #wait for pipe source
+sleep 3 #wait for pipe source
 ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${topic} --output raw | ${cmd}
 ${GPTSCRIPT_TOOL_DIR}/bin/kaf topic delete ${topic} # cleanup
 
@@ -142,7 +142,7 @@ args: outtopic: the topic to send the output of command
 
 #!/usr/bin/env bash
 
-sleep 5 # wait for pipe source
+sleep 3 # wait for pipe source
 ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${intopic} --output raw | ${cmd} | ${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${outtopic}
 ${GPTSCRIPT_TOOL_DIR}/bin/kaf topic delete ${intopic} # clean up
 
