@@ -3,12 +3,9 @@ tools: data-transform, data-aggregate, start-kafka-broker, stop-kafka-broker, sy
 Do the following step by step, don't move on to the next step until current step is done.
 1. start a local kafka broker with name broker.
 2. connect to this broker.
-3. create a "data-json" topic, and a "data-raw" topic with 3 partitions.
-4. pipe container broker's logs (don't follow) to "data-raw".
-5. transform data from "data-raw" into json object, and send it to "data-json".
-6. aggregate data from "data-json".
-7. only summarize the aggregation result in pretty json format.
-8. stop and remove broker.
+3. pipe container broker's logs (don't follow) to data-transform to data-aggregate.
+4. only summarize the aggregation result in pretty json format.
+5. stop and remove broker.
 
 ---
 name: data-transform
