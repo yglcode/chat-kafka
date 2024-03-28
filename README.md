@@ -12,4 +12,6 @@ To run the example, you need:
 1. install gptscript and set up OpenAI api key as instructed in gptscript project.
 2. have docker installed.
 3. clone this repo
-4. cd examples; gptscript data-pipeline.gpt
+4. cd examples 
+5. gptscript --cache=false data-pipeline.gpt
+6. gptscript --cache=false pipe_thru_kafka.gpt

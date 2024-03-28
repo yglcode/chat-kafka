@@ -3,8 +3,8 @@ tools: start-kafka-broker, stop-kafka-broker, sys.exec, github.com/yglcode/chat-
 Do the following step by step, don't move on to the next step until current step is done.
 1. start a local kafka broker with name broker.
 2. connect to this broker.
-3. use topics to pipe ls to sort reverse to translate lower to upper case as end, then show the result.
-4. stop and remove broker.
+3. use topics to pipe ls to sort reverse to translate lower to upper case, save the result to a local file and show file name.
+4. do not summarize action steps, and stop and remove broker.
 
 ---
 name: start-kafka-broker
