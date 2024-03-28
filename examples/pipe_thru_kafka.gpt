@@ -3,7 +3,7 @@ tools: start-kafka-broker, stop-kafka-broker, sys.exec, github.com/yglcode/chat-
 Do the following step by step, don't move on to the next step until current step is done.
 1. start a local kafka broker with name broker.
 2. connect to this broker.
-3. use topics to pipe ls to sort reverse to uniq, and show the result.
+3. use topics to pipe ls to sort reverse to tr lower case to upper case as end, then show the result.
 4. stop and remove broker.
 
 ---

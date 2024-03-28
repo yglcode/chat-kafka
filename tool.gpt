@@ -122,14 +122,14 @@ ${cmd} | ${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${topic}
 
 ---
 name: pipe-sink
-description: execute a command and read its input from topic, as the final destination or sink of pipe, it ends the pipe.
+description: execute a command and read its input from topic, as the end or sink of pipe, it ends the pipe.
 args: cmd: the command to run including its all arguments
-args: topic: the topic to read receive as input of command
+args: topic: the topic to read receive input of command
 tools: sys.exec
 
 #!/usr/bin/env bash
 
-sleep 3 #wait for pipe source
+sleep 3 #wait for pipe data
 ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${topic} --output raw | ${cmd}
 ${GPTSCRIPT_TOOL_DIR}/bin/kaf topic delete ${topic} # cleanup
 
@@ -137,12 +137,12 @@ ${GPTSCRIPT_TOOL_DIR}/bin/kaf topic delete ${topic} # cleanup
 name: pipe-filter
 description: execute a command and read its input from intopic and write its output to outtopic, as a filter in pipe
 args: cmd: the command to run including its all arguments
-args: intopic: the topic to read receive as input of command
+args: intopic: the topic to read receive input of command
 args: outtopic: the topic to send the output of command
 
 #!/usr/bin/env bash
 
-sleep 3 # wait for pipe source
+sleep 3 # wait for pipe data
 ${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${intopic} --output raw | ${cmd} | ${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${outtopic}
 ${GPTSCRIPT_TOOL_DIR}/bin/kaf topic delete ${intopic} # clean up
 
