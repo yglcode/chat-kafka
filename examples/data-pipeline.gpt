@@ -1,4 +1,4 @@
-tools: data-transform, data-aggregate, start-kafka-broker, stop-kafka-broker, sys.exec, ../tool.gpt
+tools: data-transform, data-aggregate, start-kafka-broker, stop-kafka-broker, sys.exec, github.com/yglcode/chat-kafka
 
 Do the following step by step, don't move on to the next step until current step is done.
 1. start a local kafka broker with name broker.
