@@ -1,4 +1,4 @@
-export: connect-broker, create-topic, delete-topic, list-topics, send-data-topic, send-file-topic, recv-topic-data, recv-topic-file
+export: connect-broker, create-topic, delete-topic, list-topics, send-data-topic, send-file-topic, recv-topic-data, recv-topic-file, pipe-source, pipe-sink, pipe-filter
 description: A toolset for talking to kafka broker cluster.
 
 ---
@@ -107,3 +107,42 @@ fi
 if ${GPTSCRIPT_TOOL_DIR}/bin/kaf config add-cluster ${cluster} --brokers ${brokers}; then
   ${GPTSCRIPT_TOOL_DIR}/bin/kaf config use-cluster ${cluster}
 fi
+
+---
+name: pipe-source
+description: execute a command and send its output to topic, as the source of pipe.
+args: cmd: the command to run including its all arguments
+args: topic: the topic to send the output of command
+tools: sys.exec
+
+#!/usr/bin/env bash
+
+${cmd} | ${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${topic}
+
+
+---
+name: pipe-sink
+description: execute a command and read its input from topic, as the final destination or sink of pipe, it ends the pipe.
+args: cmd: the command to run including its all arguments
+args: topic: the topic to read receive as input of command
+tools: sys.exec
+
+#!/usr/bin/env bash
+
+sleep 5 #wait for pipe source
+${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${topic} --output raw | ${cmd}
+${GPTSCRIPT_TOOL_DIR}/bin/kaf topic delete ${topic} # cleanup
+
+---
+name: pipe-filter
+description: execute a command and read its input from intopic and write its output to outtopic, as a filter in pipe
+args: cmd: the command to run including its all arguments
+args: intopic: the topic to read receive as input of command
+args: outtopic: the topic to send the output of command
+
+#!/usr/bin/env bash
+
+sleep 5 # wait for pipe source
+${GPTSCRIPT_TOOL_DIR}/bin/kaf consume ${intopic} --output raw | ${cmd} | ${GPTSCRIPT_TOOL_DIR}/bin/kaf produce ${outtopic}
+${GPTSCRIPT_TOOL_DIR}/bin/kaf topic delete ${intopic} # clean up
+

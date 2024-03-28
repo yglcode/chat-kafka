@@ -1,0 +1,41 @@
+tools: start-kafka-broker, stop-kafka-broker, sys.exec, ../tool.gpt
+
+Do the following step by step, don't move on to the next step until current step is done.
+1. start a local kafka broker with name broker.
+2. connect to this broker.
+3. use topic to pipe ls to sort reverse to uniq, and show the result.
+4. stop and remove broker.
+
+---
+name: start-kafka-broker
+description: start a local kafka broker
+args: broker: name of broker
+tools: sys.exec
+
+#!/usr/bin/env bash
+
+if docker ps -a --filter name=${broker} --format {{.Names}} | grep -Eq "^${broker}\$"; then
+    if docker ps --filter name=${broker} --format {{.Names}} | grep -Eq "^${broker}\$"; then
+        echo "Local kafka broker is running"
+    else
+        docker start ${broker}
+        echo "Restart local kafka broker"
+    fi
+else
+    docker run -d --name ${broker} --network host apache/kafka
+    echo "Start local kafka broker"
+fi
+
+---
+name: stop-kafka-broker
+description: clean up, stop and remove local kafka broker
+args: broker: name of broker
+tools: sys.exec
+
+#!/usr/bin/env bash
+
+if docker ps -a --filter name=${broker} --format {{.Names}} | grep -Eq  "^${broker}\$"; then
+    docker stop ${broker}
+    docker rm ${broker}
+    echo "Stop and remove local kafka broker"
+fi
